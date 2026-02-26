@@ -131,6 +131,7 @@ dp = Dispatcher(storage=storage)
 
 
 class PetitionStates(StatesGroup):
+    waiting_for_type = State()       # <--- ДОБАВИЛИ ЭТУ СТРОКУ
     waiting_confirmation = State()
 
 
@@ -347,10 +348,25 @@ async def cmd_start(message: Message):
 
 
 @dp.message(F.text == "📝 Шаблоны прошений")
-async def handle_templates(message: Message):
-    await message.answer(
-        "📝 *Шаблоны прошений*\nНапишите, какой тип прошения нужен (академ, отчисление, справка и т.д.):",
-        parse_mode=ParseMode.MARKDOWN)
+async def handle_templates(message: Message, state: FSMContext):
+    await state.set_state(PetitionStates.waiting_for_type) # Запоминаем, что ждем тип шаблона
+    await message.answer("📝 *Шаблоны прошений*\nНапишите, какой тип прошения нужен (академ, отчисление, справка и т.д.):", parse_mode=ParseMode.MARKDOWN)
+    @dp.message(PetitionStates.waiting_for_type)
+async def process_template_type(message: Message, state: FSMContext):
+    user_text = message.text
+    template_path = find_template(user_text)
+    
+    if template_path:
+        await state.update_data(template_path=template_path)
+        await state.set_state(PetitionStates.waiting_confirmation)
+        await message.answer(
+            f"📄 *Нашёл шаблон:*\n*{os.path.basename(template_path)}*\n\nВыслать вам файл?", 
+            reply_markup=confirm_kb, 
+            parse_mode=ParseMode.MARKDOWN
+        )
+    else:
+        await message.answer("К сожалению, я не нашел такого шаблона. Попробуйте уточнить запрос (например, 'академ' или 'отчисление').", reply_markup=kb_main)
+        await state.clear()
 
 
 @dp.message(PetitionStates.waiting_confirmation)
