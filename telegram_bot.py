@@ -4,13 +4,10 @@ import sqlite3
 import logging
 import re
 import asyncio
-from datetime import datetime
-from aiogram import Bot, Dispatcher
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, Message, CallbackQuery, InlineKeyboardMarkup, \
-    InlineKeyboardButton
-from aiogram.types import FSInputFile  # <-- ВАЖНО: правильный импорт для отправки Word-файлов
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import FSInputFile  
 from aiogram.enums import ParseMode
-from aiogram.filters import F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
